@@ -31,6 +31,30 @@ class VideoWrapper
     end
   end
 
+  # Gets a movie from tmDB by ID
+  # Returns video object or nil if not found
+  def self.get_movie(id, retries_left=3)
+    raise ArgumentError.new("Can't search without a MOVIEDB_KEY.  Please check your .env file!") unless KEY
+
+    url = BASE_URL + "movie/" + id.to_s + "?api_key=" + KEY
+
+    puts url
+
+    response =  HTTParty.get(url)
+
+    if response.success?
+      return self.construct_video(response)
+    elsif response["status_code"] == 34 # No movie by that ID
+      return nil
+    elsif retries_left > 0
+      sleep(1.0 / (2 ** retries_left))
+
+      return self.get_movie(query, retries_left - 1)
+    else
+      raise ArgumentError.new("Request failed: #{url}")
+    end
+  end
+
   private
 
   def self.construct_video(api_result)
