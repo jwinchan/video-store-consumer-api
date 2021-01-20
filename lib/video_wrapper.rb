@@ -40,7 +40,7 @@ class VideoWrapper
 
     puts url
 
-    response =  HTTParty.get(url)
+    response = HTTParty.get(url)
 
     if response.success?
       return self.construct_video(response)
