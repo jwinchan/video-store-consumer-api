@@ -38,8 +38,6 @@ class VideoWrapper
 
     url = BASE_URL + "movie/" + id.to_s + "?api_key=" + KEY
 
-    puts url
-
     response = HTTParty.get(url)
 
     if response.success?

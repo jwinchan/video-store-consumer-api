@@ -28,8 +28,9 @@ class VideosController < ApplicationController
         video = VideoWrapper.get_movie(params[:id])
         unless params[:inventory].to_i > 0
           render_error("Invalid inventory given", :bad_request)
+          return
         end
-        video.inventory = params[:inventory]
+        video&.inventory = params[:inventory]
       rescue ArgumentError
         render_error("Unspecified API error", :bad_request)
         return

@@ -77,4 +77,48 @@ class VideosControllerTest < ActionDispatch::IntegrationTest
       expect(data["errors"]).must_include "title"
     end
   end
+
+  describe "add to library" do
+    it "can add a video to the library successfully" do
+      post add_to_library_path(id: 568160, inventory: 1)
+      assert_response :success
+
+      response = JSON.parse @response.body
+
+      expect(response["ok"]).must_equal true
+      expect(Video.find_by(id:response["id"]).title).must_equal "Weathering with You"
+    end
+
+    it "does not add a duplicate video to the library" do
+      post add_to_library_path(id: 568160, inventory: 1)
+      post add_to_library_path(id: 568160, inventory: 1)
+
+      assert_response :bad_request
+
+      response = JSON.parse @response.body
+      expect(response["ok"]).must_equal false
+      expect(response["errors"]["title"]).must_equal ["has already been taken"]
+    end
+
+    it "does not add a video if not found in external API" do
+      post add_to_library_path(id: 1, inventory: 1)
+
+      assert_response :not_found
+
+      response = JSON.parse @response.body
+      expect(response["ok"]).must_equal false
+      expect(response["errors"]).must_equal "Movie was not found from external API"
+    end
+
+    it "does not add a video with invalid inventory" do
+      post add_to_library_path(id: 568160, inventory: -1)
+
+      assert_response :bad_request
+
+      response = JSON.parse @response.body
+      expect(response["ok"]).must_equal false
+      expect(response["errors"]).must_equal "Invalid inventory given"
+    end
+
+  end
 end
